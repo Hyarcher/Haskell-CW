@@ -11,11 +11,7 @@ type Title = String
 type Artist = String
 type Year = Int
 type Sales = Int
-
-data Album = Album Title Artist Year Sales
-    deriving (Eq, Show)
-
-
+type Album = (Title, Artist, Year, Sales)
 
 
 
@@ -82,9 +78,30 @@ testData = [("Greatest Hits", "Queen", 1981, 6300000),
 --
 --
 
-
+-- i
 albumsToString :: [Album] -> String
-newEntry :: String -> String -> Int -> Int -> [Album] -> [Album]
+albumsToString [] = ""
+albumsToString ((title, artist, releaseYear, sales):xs) = "Title: " ++ title ++ "|" ++ "Artist: " ++ artist ++ "|" ++ "Release year: " ++ show(releaseYear) ++ "|" ++ "Sales: " ++ show(sales) ++ "\n" ++ albumsToString xs
+
+-- ii
+topTen :: [Album] -> String
+topTen 
+
+-- iii
+-- albumsBetweenYears :: [Album] -> String
+
+-- iv
+-- prefixAlbums ::
+
+-- v
+
+-- vi
+
+-- vii
+
+-- viii
+
+
 
 
 
@@ -92,8 +109,8 @@ newEntry :: String -> String -> Int -> Int -> [Album] -> [Album]
 -- testData doesn't change and nothing is saved/loaded to/from albums file).
 
 --demo :: Int -> IO ()
-demo 1  = putStrLn (albumsToString testData)
---demo 2  = putStrLn (albumsToString (top10 testData))
+demo 1 = putStrLn (albumsToString testData)
+demo 2  = putStrLn (albumsToString (top10 testData))
 --demo 3  = putStrLn ( all albums released between 2000 and 2008 inclusive )
 --demo 4  = putStrLn ( all albums with titles beginning with "Th" )
 --demo 5  = putStrLn ( total sales figure for "Queen" )
