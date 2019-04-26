@@ -71,7 +71,7 @@ testData = [("Greatest Hits", "Queen", 1981, 6300000),
 
 --
 --
---  functional code
+--  FUNCTIONS FOR DEMOS
 --
 --
 
@@ -83,7 +83,7 @@ getAlbums = testData
 -- All the albums are returned in a single string.
 albumsToString :: [Album] -> String
 albumsToString [] = ""
-albumsToString ((title, artist, releaseYear, sales):xs) = "Title: " ++ title ++ "|" ++ "Artist: " ++ artist ++ "|" ++ "Release year: " ++ show(releaseYear) ++ "|" ++ "Sales: " ++ show(sales) ++ "\n" ++ albumsToString xs
+albumsToString ((title, artist, releaseYear, sales):xs) = "Title: " ++ title ++ "     " ++ "Artist: " ++ artist ++ "     " ++ "Release year: " ++ show(releaseYear) ++ "     " ++ "Sales: " ++ show(sales) ++ "\n" ++ albumsToString xs
 
 -- ii (too similar to Jai)
 top10 :: [Album] -> [Album]
@@ -103,7 +103,7 @@ totalArtistSales artistName testData = "This artists total sales: " ++ show(sum[
 
 -- vi
 
--- vii (too similar to Jai)
+-- vii
 removeLastAlbum :: [Album] -> [Album]
 removeLastAlbum album = init album
 
@@ -111,12 +111,15 @@ addNewAlbum :: String -> String -> Int -> Int -> [Album]
 addNewAlbum title artist year sales = insert(title,artist,year,sales) testData
 
 -- viii
+addSales :: String -> String -> Int -> [Album] -> [Album]
+addSales addTitle addArtist extraSales testData = [(name,artist,year,sales + extraSales) | (name,artist,year,sales) <- getAlbums, addTitle == name && addArtist == artist]
+
 
 
 -- Demo function to test basic functionality (without persistence - i.e.
 -- testData doesn't change and nothing is saved/loaded to/from albums file).
 
---demo :: Int -> IO ()
+demo :: Int -> IO ()
 demo 1 = putStrLn (albumsToString testData)
 demo 2 = putStrLn (albumsToString (top10 testData))
 demo 3 = putStrLn (albumsToString (albumsBetweenYears 2000 2008 testData))
@@ -124,13 +127,127 @@ demo 4 = putStrLn (albumsToString (prefixAlbums "Th" testData))
 demo 5 = putStrLn (totalArtistSales "Queen" testData)
 --demo 6 = putStrLn (
 demo 7 = putStrLn (albumsToString (removeLastAlbum (addNewAlbum "Progress" "Take That" 2010 2700000)))
---demo 8 = putStrLn ( albums after increasing sales of "21" by "Adele" by 400000 )
+demo 8 = putStrLn (albumsToString (addSales "21" "Adele" 890000 testData))
+
 
 --
 --
--- Your user interface (and loading/saving) code goes here
+-- USER INTERFACE
 --
 --
 
---main :: IO ()
---main = putStrLn
+main :: IO ()
+main = do
+  fileContent <- readFile "albums.txt"
+  let albums = read fileContent :: [Album]
+  putStrLn (albumsToString albums)
+  optionMenu albums
+
+
+menuDisplay :: IO ()
+menuDisplay = do
+  putStrLn("")
+  putStrLn("##   ##   #####   #   #   #   #")
+  putStrLn("# # # #   #       ##  #   #   #")
+  putStrLn("#  #  #   ####    # # #   #   #")
+  putStrLn("#     #   #       #  ##   #   #")
+  putStrLn("#     #   #####   #   #   #####")
+  putStrLn("")
+  putStrLn("Please type an option from the list below :)")
+  putStrLn("")
+  putStrLn("")
+  putStrLn("( 1 ) = Print the list of Albums")
+  putStrLn("( 2 ) = Print the top 10 albums in terms of sales")
+  putStrLn("( 3 ) = Print all the inclusive albums between two given years")
+  putStrLn("( 4 ) = Print all albums with a given prefix")
+  putStrLn("( 5 ) = Print the total sales figure for a given artist")
+  putStrLn("( 6 ) = Print a list showing how many times each artist is in the top 50")
+  putStrLn("( 7 ) = Remove the 50th (lowest selling) album and adds a given (new) album into the list")
+  putStrLn("( 8 ) = Increase the sales figure for an album given its title, artist and additional sales")
+  putStrLn("( save ) = Saves changes to the file")
+  putStrLn("( exit ) = Exits the program with no changes to the file")
+  putStrLn("")
+
+
+optionMenu :: [Album] -> IO ()
+optionMenu albums = do
+  menuDisplay
+  putStrLn("Type your option: ")
+  option <- getLine
+  optionSelected option albums
+  putStrLn("")
+
+
+optionSelected :: String -> [Album] -> IO ()
+optionSelected "1" albums = do
+  putStrLn (albumsToString albums)
+  optionMenu albums
+
+optionSelected "2" albums = do
+  putStrLn (albumsToString (top10 albums))
+  optionMenu albums
+
+optionSelected "3" albums = do
+  yearX <- getLine
+  let yearA = read yearX :: Int
+  yearY <- getLine
+  let yearB = read yearY :: Int
+  putStrLn (albumsToString (albumsBetweenYears yearA yearB albums))
+
+optionSelected "4" albums = do
+  prefix <- getLine
+  putStrLn (albumsToString (prefixAlbums prefix albums))
+
+optionSelected "5" albums = do
+  artistName <- getLine
+  putStrLn (totalArtistSales artistName albums)
+
+optionSelected "6" albums = do
+  menuDisplay
+
+optionSelected "7" albums = do
+  newAlbumName <- getLine
+  newArtist <- getLine
+  year <- getLine
+  let newYear = read year :: Int
+  sales <- getLine
+  let newSales = read sales :: Int
+  putStrLn (albumsToString (removeLastAlbum (addNewAlbum newAlbumName newArtist newYear newSales)))
+  menuDisplay
+
+optionSelected "8" albums = do
+  albumName <- getLine
+  artist <- getLine
+  sales <- getLine
+  let salesIncrease = read sales :: Int
+  putStrLn (albumsToString (addSales albumName artist salesIncrease albums))
+  menuDisplay
+
+--optionSelected "save"
+
+optionSelected "exit" albums = do
+  putStrLn("Exited the program, file was not saved")
+  
+optionSelected _ albums = do
+  menuDisplay
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+--
