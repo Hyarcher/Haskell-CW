@@ -1,8 +1,16 @@
 -- Haskell CW 2019
 -- UP839653
 
+
 import Text.Printf
 import Data.List
+
+
+-- ######################### --
+--                           --
+--  DATA TYPES AND DATABASE  --
+--                           --
+-- ######################### --
 
 
 -- Type Definitions
@@ -12,8 +20,7 @@ type Year = Int
 type Sales = Int
 type Album = (Title, Artist, Year, Sales)
 
--- Define Album type here
-
+--
 testData :: [Album]
 testData = [("Greatest Hits", "Queen", 1981, 6300000),
             ("Gold: Greatest Hits", "ABBA", 1992, 5400000),
@@ -68,32 +75,34 @@ testData = [("Greatest Hits", "Queen", 1981, 6300000),
 
 
 
+-- ##################### --
+--                       --
+--  FUNCTIONS FOR DEMOS  --
+--                       --
+-- ##################### --
 
---
---
---  FUNCTIONS FOR DEMOS
---
---
 
 getAlbums :: [Album]
 getAlbums = testData
 
 
--- i (too similar to Jai and Leo)
+-- i
 -- All the albums are returned in a single string.
 albumsToString :: [Album] -> String
-albumsToString [] = ""
-albumsToString ((title, artist, releaseYear, sales):xs) = "Title: " ++ title ++ "     " ++ "Artist: " ++ artist ++ "     " ++ "Release year: " ++ show(releaseYear) ++ "     " ++ "Sales: " ++ show(sales) ++ "\n" ++ albumsToString xs
+albumsToString list = unlines(map printAlbums list)
 
--- ii (too similar to Jai)
+printAlbums :: (String, String, Int, Int) -> String
+printAlbums (title, artist, year, sales) = "Title: " ++ title ++ ", Artist: " ++ artist ++ ", Year: " ++ show(year) ++ ", Sales: " ++show(sales)
+
+-- ii
 top10 :: [Album] -> [Album]
 top10 tenAlbums = take 10 getAlbums
 
--- iii (too similar to Jai)
+-- iii
 albumsBetweenYears :: Int -> Int -> [Album] -> [Album]
 albumsBetweenYears yearX yearY testData = filter (\(_,_,year,_) -> year >= yearX && year <= yearY) getAlbums
 
--- iv (too similar to Jai)
+-- iv
 prefixAlbums :: String -> [Album] -> [Album]
 prefixAlbums prefix testData = filter (\(name,_,_,_) -> isPrefixOf prefix name) getAlbums
 
@@ -116,8 +125,12 @@ addSales addTitle addArtist extraSales testData = [(name,artist,year,sales + ext
 
 
 
--- Demo function to test basic functionality (without persistence - i.e.
--- testData doesn't change and nothing is saved/loaded to/from albums file).
+-- ##################### --
+--                       --
+--     DEMO TESTING      --
+--                       --
+-- ##################### --
+
 
 demo :: Int -> IO ()
 demo 1 = putStrLn (albumsToString testData)
@@ -125,16 +138,18 @@ demo 2 = putStrLn (albumsToString (top10 testData))
 demo 3 = putStrLn (albumsToString (albumsBetweenYears 2000 2008 testData))
 demo 4 = putStrLn (albumsToString (prefixAlbums "Th" testData))
 demo 5 = putStrLn (totalArtistSales "Queen" testData)
---demo 6 = putStrLn (
+--demo 6 = putStrLn ()
 demo 7 = putStrLn (albumsToString (removeLastAlbum (addNewAlbum "Progress" "Take That" 2010 2700000)))
 demo 8 = putStrLn (albumsToString (addSales "21" "Adele" 890000 testData))
 
 
---
---
--- USER INTERFACE
---
---
+
+-- ##################### --
+--                       --
+--    USER INTERFACE     --
+--                       --
+-- ##################### --
+
 
 main :: IO ()
 main = do
@@ -188,57 +203,81 @@ optionSelected "2" albums = do
   optionMenu albums
 
 optionSelected "3" albums = do
+  putStrLn("Enter the first year: ")
   yearX <- getLine
   let yearA = read yearX :: Int
+  putStrLn("Enter the second year: ")
   yearY <- getLine
   let yearB = read yearY :: Int
   putStrLn (albumsToString (albumsBetweenYears yearA yearB albums))
+  optionMenu albums
 
 optionSelected "4" albums = do
+  putStrLn("Enter a prefix of an album name: ")
   prefix <- getLine
   putStrLn (albumsToString (prefixAlbums prefix albums))
+  optionMenu albums
 
 optionSelected "5" albums = do
+  putStrLn("Enter an artists' name: ")
   artistName <- getLine
   putStrLn (totalArtistSales artistName albums)
+  optionMenu albums
 
 optionSelected "6" albums = do
-  menuDisplay
+  optionMenu albums
 
 optionSelected "7" albums = do
+  putStrLn("Enter a new album name: ")
   newAlbumName <- getLine
+  putStrLn("Enter a new artist: ")
   newArtist <- getLine
+  putStrLn("Enter a new year: ")
   year <- getLine
   let newYear = read year :: Int
+  putStrLn("Enter new sales: ")
   sales <- getLine
   let newSales = read sales :: Int
-  putStrLn (albumsToString (removeLastAlbum (addNewAlbum newAlbumName newArtist newYear newSales)))
-  menuDisplay
+  let updatedAlbums = removeLastAlbum (addNewAlbum newAlbumName newArtist newYear newSales)
+  putStrLn (albumsToString updatedAlbums)
+  optionMenu updatedAlbums
 
 optionSelected "8" albums = do
+  putStrLn("Enter an album name: ")
   albumName <- getLine
+  putStrLn("Enter an artist: ")
   artist <- getLine
+  putStrLn("Enter the increase in sales: ")
   sales <- getLine
   let salesIncrease = read sales :: Int
-  putStrLn (albumsToString (addSales albumName artist salesIncrease albums))
-  menuDisplay
+  let updatedSales = addSales albumName artist salesIncrease albums
+  putStrLn (albumsToString updatedSales)
+  optionMenu updatedSales
 
---optionSelected "save"
+optionSelected "save" albums = do
+  writeFile "albums.txt" (show albums)
+  putStrLn("#########################")
+  putStrLn("#                       #")
+  putStrLn("#  FILE HAS BEEN SAVED  #")
+  putStrLn("#                       #")
+  putStrLn("#########################")
+  optionMenu albums
 
 optionSelected "exit" albums = do
   putStrLn("Exited the program, file was not saved")
-  
+
 optionSelected _ albums = do
-  menuDisplay
+  optionMenu albums
 
 
+-- ########################### --
+--                             --
+--  VALIDATION FOR I/O INPUTS  --
+--                             --
+-- ########################### --
 
-
-
-
-
-
-
+--option3Validation :: Int -> Int
+--option3Validation yearA yearB | ()
 
 
 
