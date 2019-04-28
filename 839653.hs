@@ -1,9 +1,14 @@
--- Haskell CW 2019
--- UP839653
+-- ############################ --
+--                              --
+--  HASKELL CW 2019 / UP839653  --
+--                              --
+-- ############################ --
 
 
+-- Imported modules.
 import Text.Printf
 import Data.List
+import Data.Char
 
 
 -- ######################### --
@@ -13,14 +18,14 @@ import Data.List
 -- ######################### --
 
 
--- Type Definitions
+-- Type Definitions.
 type Title = String
 type Artist = String
 type Year = Int
 type Sales = Int
 type Album = (Title, Artist, Year, Sales)
 
---
+-- A list of tuples defining the Album type.
 testData :: [Album]
 testData = [("Greatest Hits", "Queen", 1981, 6300000),
             ("Gold: Greatest Hits", "ABBA", 1992, 5400000),
@@ -77,7 +82,7 @@ testData = [("Greatest Hits", "Queen", 1981, 6300000),
 
 -- ##################### --
 --                       --
---  FUNCTIONS FOR DEMOS  --
+--   Main functionality  --
 --                       --
 -- ##################### --
 
@@ -87,41 +92,52 @@ getAlbums = testData
 
 
 -- i
--- All the albums are returned in a single string.
+-- All the albums are returned in a single string. 'unlines' allows each tuple to start of a different line.
+-- 'map' returns the list of tuples applying the 'unlines' function to all tuples.
 albumsToString :: [Album] -> String
-albumsToString list = unlines(map printAlbums list)
+albumsToString testData = unlines(map printAlbums testData)
 
+-- Prints the tuples from the list with labels in front. This function is parsed into 'unlines'.
 printAlbums :: (String, String, Int, Int) -> String
 printAlbums (title, artist, year, sales) = "Title: " ++ title ++ ", Artist: " ++ artist ++ ", Year: " ++ show(year) ++ ", Sales: " ++show(sales)
 
 -- ii
+-- The top ten albums are printed out. 'take' takes the top ten tuples from the list.
 top10 :: [Album] -> [Album]
 top10 tenAlbums = take 10 getAlbums
 
 -- iii
+-- Compares two years given by the user and checks whether 'yearX' and 'yearY' are smaller or larger
+-- than year respectively. Also by using '=' we get the inclusive years inputted by the user.
 albumsBetweenYears :: Int -> Int -> [Album] -> [Album]
-albumsBetweenYears yearX yearY testData = filter (\(_,_,year,_) -> year >= yearX && year <= yearY) getAlbums
+albumsBetweenYears yearX yearY testData = [(title,artist,year,sales) | (title,artist,year,sales) <- getAlbums, yearX <= year && yearY >= year]
 
 -- iv
+-- Gets the prefix inputted by the user and uses 'isPrefixOf' to produce a list of albums with this prefix.
 prefixAlbums :: String -> [Album] -> [Album]
-prefixAlbums prefix testData = filter (\(name,_,_,_) -> isPrefixOf prefix name) getAlbums
+prefixAlbums prefix testData = [(title,artist,year,sales) | (title,artist,year,sales) <- getAlbums, isPrefixOf prefix title]
 
 -- v
+-- Takes the artists name and then sum adds the sales together and prints the total sales figure.
 totalArtistSales :: String -> [Album] -> String
 totalArtistSales artistName testData = "This artists total sales: " ++ show(sum[sales | (name,artist,year,sales) <- getAlbums, artist == artistName])
 
 -- vi
 
 -- vii
+-- Removes the last album from the list.
 removeLastAlbum :: [Album] -> [Album]
 removeLastAlbum album = init album
 
+-- Appends a new album into the list.
 addNewAlbum :: String -> String -> Int -> Int -> [Album]
 addNewAlbum title artist year sales = insert(title,artist,year,sales) testData
 
 -- viii
+-- Takes the name and artist and then increases the sales based on the user's input. Then prints the
+-- albums with the new increased sales.
 addSales :: String -> String -> Int -> [Album] -> [Album]
-addSales addTitle addArtist extraSales testData = [(name,artist,year,sales + extraSales) | (name,artist,year,sales) <- getAlbums, addTitle == name && addArtist == artist]
+addSales addTitle addArtist extraSales testData = [(name,artist,year,sales + extraSales) | (name,artist,year,sales) <- getAlbums, addTitle == name && addArtist == artist] ++ getAlbums
 
 
 
@@ -132,6 +148,7 @@ addSales addTitle addArtist extraSales testData = [(name,artist,year,sales + ext
 -- ##################### --
 
 
+-- Demo functions for testing the functionality of the code.
 demo :: Int -> IO ()
 demo 1 = putStrLn (albumsToString testData)
 demo 2 = putStrLn (albumsToString (top10 testData))
@@ -140,7 +157,7 @@ demo 4 = putStrLn (albumsToString (prefixAlbums "Th" testData))
 demo 5 = putStrLn (totalArtistSales "Queen" testData)
 --demo 6 = putStrLn ()
 demo 7 = putStrLn (albumsToString (removeLastAlbum (addNewAlbum "Progress" "Take That" 2010 2700000)))
-demo 8 = putStrLn (albumsToString (addSales "21" "Adele" 890000 testData))
+demo 8 = putStrLn (albumsToString (addSales "21" "Adele" 400000 testData))
 
 
 
@@ -151,6 +168,7 @@ demo 8 = putStrLn (albumsToString (addSales "21" "Adele" 890000 testData))
 -- ##################### --
 
 
+-- The main function reads the file and gets the content from the file.
 main :: IO ()
 main = do
   fileContent <- readFile "albums.txt"
@@ -159,6 +177,8 @@ main = do
   optionMenu albums
 
 
+-- The menu that is displayed to the user with a
+-- list of the options the user can choose from.
 menuDisplay :: IO ()
 menuDisplay = do
   putStrLn("")
@@ -176,14 +196,15 @@ menuDisplay = do
   putStrLn("( 3 ) = Print all the inclusive albums between two given years")
   putStrLn("( 4 ) = Print all albums with a given prefix")
   putStrLn("( 5 ) = Print the total sales figure for a given artist")
-  putStrLn("( 6 ) = Print a list showing how many times each artist is in the top 50")
+  putStrLn("( 6 ) = (DOESN'T WORK) Print a list showing how many times each artist is in the top 50")
   putStrLn("( 7 ) = Remove the 50th (lowest selling) album and adds a given (new) album into the list")
   putStrLn("( 8 ) = Increase the sales figure for an album given its title, artist and additional sales")
-  putStrLn("( save ) = Saves changes to the file")
-  putStrLn("( exit ) = Exits the program with no changes to the file")
+  putStrLn("( save & exit ) = Saves changes to the file and exits the program")
   putStrLn("")
 
 
+-- After the main menu is displayed, this function gets the input from the user with 'getLine'.
+-- This input is then checked against the possible options from optionSelected.
 optionMenu :: [Album] -> IO ()
 optionMenu albums = do
   menuDisplay
@@ -193,6 +214,8 @@ optionMenu albums = do
   putStrLn("")
 
 
+-- The optionMenu parses the user's choice into this function then the corresponding choice
+-- is displayed on the user interface.
 optionSelected :: String -> [Album] -> IO ()
 optionSelected "1" albums = do
   putStrLn (albumsToString albums)
@@ -203,23 +226,35 @@ optionSelected "2" albums = do
   optionMenu albums
 
 optionSelected "3" albums = do
-  putStrLn("Enter the first year: ")
+  putStrLn("Enter the first year (input an integer): ")
   yearX <- getLine
   let yearA = read yearX :: Int
-  putStrLn("Enter the second year: ")
+  putStrLn("Enter the second year (input an integer): ")
   yearY <- getLine
   let yearB = read yearY :: Int
-  putStrLn (albumsToString (albumsBetweenYears yearA yearB albums))
-  optionMenu albums
+-- Conditional to check if the first inputted year is larger than the second inputted year.
+-- If the first year is larger then the program returns an error statement and displays the menu again.
+  if (yearA > yearB)
+    then do
+      putStrLn("#################################")
+      putStrLn("#                               #")
+      putStrLn("#  The first year cannot be     #")
+      putStrLn("#  larger than the second year  #")
+      putStrLn("#                               #")
+      putStrLn("#################################")
+      optionMenu albums
+    else do
+      putStrLn (albumsToString (albumsBetweenYears yearA yearB albums))
+      optionMenu albums
 
 optionSelected "4" albums = do
-  putStrLn("Enter a prefix of an album name: ")
+  putStrLn("Enter a prefix of an album name (input a string): ")
   prefix <- getLine
   putStrLn (albumsToString (prefixAlbums prefix albums))
   optionMenu albums
 
 optionSelected "5" albums = do
-  putStrLn("Enter an artists' name: ")
+  putStrLn("Enter an artists' name (input a string): ")
   artistName <- getLine
   putStrLn (totalArtistSales artistName albums)
   optionMenu albums
@@ -228,14 +263,14 @@ optionSelected "6" albums = do
   optionMenu albums
 
 optionSelected "7" albums = do
-  putStrLn("Enter a new album name: ")
+  putStrLn("Enter a new album name (input a string): ")
   newAlbumName <- getLine
-  putStrLn("Enter a new artist: ")
+  putStrLn("Enter a new artist (input a string): ")
   newArtist <- getLine
-  putStrLn("Enter a new year: ")
+  putStrLn("Enter a new year (input an integer): ")
   year <- getLine
   let newYear = read year :: Int
-  putStrLn("Enter new sales: ")
+  putStrLn("Enter new sales (input an integer): ")
   sales <- getLine
   let newSales = read sales :: Int
   let updatedAlbums = removeLastAlbum (addNewAlbum newAlbumName newArtist newYear newSales)
@@ -243,50 +278,28 @@ optionSelected "7" albums = do
   optionMenu updatedAlbums
 
 optionSelected "8" albums = do
-  putStrLn("Enter an album name: ")
+  putStrLn("Enter an album name (input a string): ")
   albumName <- getLine
-  putStrLn("Enter an artist: ")
+  putStrLn("Enter an artist (input a string): ")
   artist <- getLine
-  putStrLn("Enter the increase in sales: ")
+  putStrLn("Enter the increase in sales (input an integer): ")
   sales <- getLine
   let salesIncrease = read sales :: Int
   let updatedSales = addSales albumName artist salesIncrease albums
   putStrLn (albumsToString updatedSales)
   optionMenu updatedSales
 
-optionSelected "save" albums = do
+-- This option allows the user to exit the application and when exited will save the file
+-- and write any new data to the 'albums.txt' file.
+optionSelected "save & exit" albums = do
   writeFile "albums.txt" (show albums)
-  putStrLn("#########################")
-  putStrLn("#                       #")
-  putStrLn("#  FILE HAS BEEN SAVED  #")
-  putStrLn("#                       #")
-  putStrLn("#########################")
-  optionMenu albums
-
-optionSelected "exit" albums = do
-  putStrLn("Exited the program, file was not saved")
+  putStrLn("#############################################################")
+  putStrLn("#                                                           #")
+  putStrLn("#    FILE HAS BEEN SAVED AND THE PROGRAM HAS BEEN EXITED    #")
+  putStrLn("#                                                           #")
+  putStrLn("# you can start the program again by entering the word main #")
+  putStrLn("#                                                           #")
+  putStrLn("#############################################################")
 
 optionSelected _ albums = do
   optionMenu albums
-
-
--- ########################### --
---                             --
---  VALIDATION FOR I/O INPUTS  --
---                             --
--- ########################### --
-
---option3Validation :: Int -> Int
---option3Validation yearA yearB | ()
-
-
-
-
-
-
-
-
-
-
-
---
